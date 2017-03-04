@@ -1,16 +1,6 @@
-/*********************************************************************
- This is an example for our nRF51822 based Bluefruit LE modules
-
- Pick one up today in the adafruit shop!
-
- Adafruit invests time and resources providing this open source code,
- please support Adafruit and open-source hardware by purchasing
- products from Adafruit!
-
- MIT license, check LICENSE for more information
- All text above, and the splash screen below must be included in
- any redistribution
-*********************************************************************/
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+///////////////////////* Libraries *////////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 #include <string.h>
 #include <Arduino.h>
@@ -24,6 +14,10 @@
 
 #include "BluefruitConfig.h"
 
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+///////////////////////* Bluetooth Config */////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+
 #define FACTORYRESET_ENABLE 0
 #define MINIMUM_FIRMWARE_VERSION "0.6.6"
 #define MODE_LED_BEHAVIOUR "MODE"
@@ -31,30 +25,20 @@
 SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);
 Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN, BLUEFRUIT_UART_CTS_PIN, BLUEFRUIT_UART_RTS_PIN);
 
-#define smcRxPin 2
-#define smcTxPin 3
-
-SoftwareSerial smcSerial = SoftwareSerial(smcRxPin, smcTxPin);
- 
-Servo xaxis;
-int xcenter = 117;
-int xrange = 40;
-int xfactor = 10;
-int xpos = xcenter;
-
-// A small helper
-void error(const __FlashStringHelper*err) {
-  Serial.println(err);
-  while (1);
-}
-
-// function prototypes over in packetparser.cpp
 uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout);
 float parsefloat(uint8_t *buffer);
 void printHex(const uint8_t * data, const uint32_t numBytes);
 
-// the packet buffer
 extern uint8_t packetbuffer[];
+
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+///////////////////////* Y-Axis Motor Config *//////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+#define smcRxPin 2
+#define smcTxPin 3
+
+SoftwareSerial smcSerial = SoftwareSerial(smcRxPin, smcTxPin);
 
 void smcSafeStart() {
   smcSerial.write(0x83);
@@ -71,12 +55,29 @@ void setMotorSpeed(int speed) {
   smcSerial.write(speed >> 5);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Sets up the HW an the BLE module (this function is called
-            automatically on startup)
-*/
-/**************************************************************************/
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+///////////////////////* X-Axis Servo Config *//////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+ 
+Servo xaxis;
+int xcenter = 117;
+int xrange = 40;
+int xfactor = 10;
+int xpos = xcenter;
+
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+///////////////////////* Helper Functions & Constants */////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+void error(const __FlashStringHelper*err) {
+  Serial.println(err);
+  while (1);
+}
+
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+///////////////////////* Arduino *//////////////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+
 void setup(void)
 {
 
