@@ -20,7 +20,7 @@
 
 #define FACTORYRESET_ENABLE 0
 #define MINIMUM_FIRMWARE_VERSION "0.6.6"
-#define MODE_LED_BEHAVIOUR "MODE"
+#define MODE_LED_BEHAVIOR "MODE"
 
 SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);
 Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN, BLUEFRUIT_UART_CTS_PIN, BLUEFRUIT_UART_RTS_PIN);
@@ -32,11 +32,25 @@ void printHex(const uint8_t * data, const uint32_t numBytes);
 extern uint8_t packetbuffer[];
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
+///////////////////////* X-Axis Servo Config *//////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+ 
+Servo xaxis;
+int xcenter = 117;
+int xpos = xcenter;
+int xfactor = 2;
+int xrange = 20;
+
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
 ///////////////////////* Y-Axis Motor Config *//////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 #define smcRxPin 2
 #define smcTxPin 3
+
+int ycenter = 0;
+int yfactor = 320;
+int yrange = 3200;
 
 SoftwareSerial smcSerial = SoftwareSerial(smcRxPin, smcTxPin);
 
@@ -46,27 +60,53 @@ void smcSafeStart() {
 
 void setMotorSpeed(int speed) {
   if (speed < 0) {
-    smcSerial.write(0x86);  // motor reverse command
-    speed = -speed;  // make speed positive
+    smcSerial.write(0x86);
+    speed = -speed;
   } else {
-    smcSerial.write(0x85);  // motor forward command
+    smcSerial.write(0x85);
   }
   smcSerial.write(speed & 0x1F);
   smcSerial.write(speed >> 5);
 }
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
-///////////////////////* X-Axis Servo Config *//////////////////////////////////////////////////////
+///////////////////////* BB-8 Logic *///////////////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
- 
-Servo xaxis;
-int xcenter = 117;
-int xrange = 40;
-int xfactor = 10;
-int xpos = xcenter;
+
+int ytarget = 0;
+int xtarget = xcenter;
+
+boolean driveN = false;
+boolean driveS = false;
+boolean driveE = false;
+boolean driveW = false;
+
+void restDrive(void) {
+  ytarget = 0;
+  xtarget = xcenter;
+  driveN = false;
+  driveS = false;
+  driveE = false;
+  driveW = false;
+}
+
+void sendMove(void) {
+
+  /*
+  Serial.print("SEND: ");
+  Serial.print(ytarget);
+  Serial.print(",");
+  Serial.print(xtarget);
+  Serial.println();  
+  */
+
+  xaxis.write(xtarget);
+  setMotorSpeed(ytarget);
+
+}
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
-///////////////////////* Helper Functions & Constants */////////////////////////////////////////////
+///////////////////////* Arduino *//////////////////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 void error(const __FlashStringHelper*err) {
@@ -74,212 +114,147 @@ void error(const __FlashStringHelper*err) {
   while (1);
 }
 
-/*////////////////////////////////////////////////////////////////////////////////////////////////*/
-///////////////////////* Arduino *//////////////////////////////////////////////////////////////////
-/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+void setup(void) {
 
-void setup(void)
-{
-
+  // Serial, Motor
   smcSerial.begin(19200);
   delay(5);
   smcSerial.write(0xAA);
   smcSafeStart();
 
+  // Serial, Bluetooth / Monitor
   Serial.begin(115200);
-  Serial.println(F("Adafruit Bluefruit App Controller Example"));
-  Serial.println(F("-----------------------------------------"));
-
-  /* Initialise the module */
-  Serial.print(F("Initialising the Bluefruit LE module: "));
-
-  if ( !ble.begin(VERBOSE_MODE) )
-  {
-    error(F("Couldn't find Bluefruit, make sure it's in CoMmanD mode & check wiring?"));
+  Serial.print(F("Initializing Bluefruit LE module: "));
+  if (!ble.begin(VERBOSE_MODE)) {
+    error(F("Couldn't find Bluefruit, make sure it's in CMD mode & check wiring?"));
   }
-  Serial.println( F("OK!") );
-
-  if ( FACTORYRESET_ENABLE )
-  {
-    /* Perform a factory reset to make sure everything is in a known state */
+  Serial.println(F("OK!"));
+  if (FACTORYRESET_ENABLE) {
     Serial.println(F("Performing a factory reset: "));
-    if ( ! ble.factoryReset() ){
-      error(F("Couldn't factory reset"));
+    if (!ble.factoryReset()) {
+      error(F("Couldn't factory reset!"));
     }
   }
-
-  /* Disable command echo from Bluefruit */
   ble.echo(false);
-
   Serial.println("Requesting Bluefruit info:");
-  /* Print Bluefruit information */
   ble.info();
-
+  /*
   Serial.println(F("Please use Adafruit Bluefruit LE app to connect in Controller mode"));
   Serial.println(F("Then activate/use the sensors, color picker, game controller, etc!"));
   Serial.println();
-
-  ble.verbose(false);  // debug info is a little annoying after this point!
+  */
+  ble.verbose(false);
 
   /* Wait for connection */
-  while (! ble.isConnected()) {
+  while (!ble.isConnected()) {
       delay(500);
   }
 
   Serial.println(F("******************************"));
 
-  // LED Activity command is only supported from 0.6.6
-  if ( ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION) )
-  {
-    // Change Mode LED Activity
-    Serial.println(F("Change LED activity to " MODE_LED_BEHAVIOUR));
-    ble.sendCommandCheckOK("AT+HWModeLED=" MODE_LED_BEHAVIOUR);
+  if (ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION)) {
+    Serial.println(F("Change LED activity to " MODE_LED_BEHAVIOR));
+    ble.sendCommandCheckOK("AT+HWModeLED=" MODE_LED_BEHAVIOR);
   }
 
-  // Set Bluefruit to DATA mode
-  Serial.println( F("Switching to DATA mode!") );
+  Serial.println(F("Switching to DATA mode!"));
   ble.setMode(BLUEFRUIT_MODE_DATA);
 
-  Serial.println(F("******************************"));
+  //Serial.println(F("******************************"));
 
-  xaxis.attach(14); // analog 0
+  // PWM, Servo
+  xaxis.attach(14);
   xaxis.write(xpos);
 
 }
 
-/**************************************************************************/
-/*!
-    @brief  Constantly poll for new command or response data
-*/
-/**************************************************************************/
-void loop(void)
-{
-  /* Wait for new data to arrive */
+void loop(void) {
+
   uint8_t len = readPacket(&ble, BLE_READPACKET_TIMEOUT);
-  if (len == 0) return;
+  //if (len == 0) return;
 
-  /* Got a packet! */
-  // printHex(packetbuffer, len);
-
-  // Color
-  if (packetbuffer[1] == 'C') {
-    uint8_t red = packetbuffer[2];
-    uint8_t green = packetbuffer[3];
-    uint8_t blue = packetbuffer[4];
-    Serial.print ("RGB #");
-    if (red < 0x10) Serial.print("0");
-    Serial.print(red, HEX);
-    if (green < 0x10) Serial.print("0");
-    Serial.print(green, HEX);
-    if (blue < 0x10) Serial.print("0");
-    Serial.println(blue, HEX);
-  }
-
-  // Buttons
   if (packetbuffer[1] == 'B') {
+
     uint8_t buttnum = packetbuffer[2] - '0';
     boolean pressed = packetbuffer[3] - '0';
-    Serial.print ("Button "); Serial.print(buttnum);
+  
     if (pressed) {
 
-      if (buttnum == 1) {
-        setMotorSpeed(0);
+      switch(buttnum) {
+        case 1:
+          restDrive();
+          break;
+        case 5:
+          driveN = true;
+          break;
+        case 6:
+          driveS = true;
+          break;
+        case 7:
+          driveW = true;
+          break;
+        case 8:
+          driveE = true;
+          break;
       }
+    
+      //Serial.println("PRESSED");
 
-      if (buttnum == 5) {
-        setMotorSpeed(3200);
-      }
-      if (buttnum == 6) {
-        setMotorSpeed(-3200);
-      }
-
-      if (buttnum == 7) {
-        if (xpos <= (xcenter+xrange)) {
-          xpos += xfactor;
-          xaxis.write(xpos);
-        } else {
-          xpos = (xcenter+xrange);
-        }
-      }
-      if (buttnum == 8) {
-        if (xpos >= (xcenter-xrange)) {
-          xpos -= xfactor;
-          xaxis.write(xpos);
-        } else {
-          xpos = (xcenter-xrange);
-        }
-      }
-      
-      Serial.println(" pressed");
     } else {
-      Serial.println(" released");
+
+      switch(buttnum) {
+        case 5:
+          driveN = false;
+          break;
+        case 6:
+          driveS = false;
+          break;
+        case 7:
+          driveW = false;
+          break;
+        case 8:
+          driveE = false;
+          break;
+      }
+
+      //Serial.println("RELEASED");
+
     }
-
-  
   
   }
 
-  // GPS Location
-  if (packetbuffer[1] == 'L') {
-    float lat, lon, alt;
-    lat = parsefloat(packetbuffer+2);
-    lon = parsefloat(packetbuffer+6);
-    alt = parsefloat(packetbuffer+10);
-    Serial.print("GPS Location\t");
-    Serial.print("Lat: "); Serial.print(lat, 4); // 4 digits of precision!
-    Serial.print('\t');
-    Serial.print("Lon: "); Serial.print(lon, 4); // 4 digits of precision!
-    Serial.print('\t');
-    Serial.print(alt, 4); Serial.println(" meters");
+  if (driveN) { if (ytarget < (ycenter+yrange)) { ytarget += yfactor; } }
+  if (driveS) { if (ytarget > (ycenter-yrange)) { ytarget -= yfactor; } }
+  if (driveW) { if (xtarget < (xcenter+xrange)) { xtarget += xfactor; } }
+  if (driveE) { if (xtarget > (xcenter-xrange)) { xtarget -= xfactor; } }
+
+  if (!driveN && !driveS) {
+     ytarget = 0;
   }
 
-  // Accelerometer
-  if (packetbuffer[1] == 'A') {
-    float x, y, z;
-    x = parsefloat(packetbuffer+2);
-    y = parsefloat(packetbuffer+6);
-    z = parsefloat(packetbuffer+10);
-    Serial.print("Accel\t");
-    Serial.print(x); Serial.print('\t');
-    Serial.print(y); Serial.print('\t');
-    Serial.print(z); Serial.println();
+  if (!driveE && !driveW) {
+     xtarget = xcenter;
   }
 
-  // Magnetometer
-  if (packetbuffer[1] == 'M') {
-    float x, y, z;
-    x = parsefloat(packetbuffer+2);
-    y = parsefloat(packetbuffer+6);
-    z = parsefloat(packetbuffer+10);
-    Serial.print("Mag\t");
-    Serial.print(x); Serial.print('\t');
-    Serial.print(y); Serial.print('\t');
-    Serial.print(z); Serial.println();
-  }
+  /*
+  Serial.print(driveN); Serial.print(""); 
+  Serial.print(driveS); Serial.print(""); 
+  Serial.print(driveE); Serial.print(""); 
+  Serial.print(driveW); Serial.print(""); 
+  */
 
-  // Gyroscope
-  if (packetbuffer[1] == 'G') {
-    float x, y, z;
-    x = parsefloat(packetbuffer+2);
-    y = parsefloat(packetbuffer+6);
-    z = parsefloat(packetbuffer+10);
-    Serial.print("Gyro\t");
-    Serial.print(x); Serial.print('\t');
-    Serial.print(y); Serial.print('\t');
-    Serial.print(z); Serial.println();
-  }
+  /*
+  Serial.print("YTARGET: ");
+  Serial.print(ytarget);
 
-  // Quaternions
-  if (packetbuffer[1] == 'Q') {
-    float x, y, z, w;
-    x = parsefloat(packetbuffer+2);
-    y = parsefloat(packetbuffer+6);
-    z = parsefloat(packetbuffer+10);
-    w = parsefloat(packetbuffer+14);
-    Serial.print("Quat\t");
-    Serial.print(x); Serial.print('\t');
-    Serial.print(y); Serial.print('\t');
-    Serial.print(z); Serial.print('\t');
-    Serial.print(w); Serial.println();
-  }
+  Serial.print(" // ");
+
+  Serial.print("XTARGET: ");
+  Serial.print(xtarget);
+
+  Serial.println();
+  */
+
+  sendMove();
+
 }
