@@ -70,6 +70,37 @@ void setMotorSpeed(SoftwareSerial &smcSerial, int speed) {
 }
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
+///////////////////////* Sound Trigger Config */////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+#define mp3RxPin 2
+#define mp3TxPin 3
+
+int mp3Byte = 0;
+boolean mp3Playing = false;
+
+SoftwareSerial mp3Trigger = SoftwareSerial(mp3RxPin, mp3TxPin);
+
+void playSound(int sample) {
+  if (mp3Playing == false) {
+    Serial.print("Playing sample #");
+    Serial.println(sample);
+    mp3Trigger.write('t');
+    mp3Trigger.write(sample);
+    // Need to get mp3Trigger.read() working...
+    //mp3Playing = true;
+  }
+}
+
+void stopSound() {
+  if (mp3Playing == true) {
+    Serial.println("Stop");
+    mp3Trigger.write('O');
+    mp3Playing = false;
+  }
+}
+
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
 ///////////////////////* BB-8 Logic *///////////////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
@@ -128,6 +159,9 @@ void setup(void) {
   smcSerialC.write(0xAA);
   smcSafeStart();
 
+  // Serial, Sounds
+  mp3Trigger.begin(38400);
+
   // Serial, Bluetooth / Monitor
   Serial.begin(115200);
   Serial.print(F("Initializing Bluefruit LE module: "));
@@ -184,7 +218,7 @@ void loop(void) {
 
       switch(buttnum) {
         case 1:
-
+          playSound(1);
           break;
         case 5:
 
@@ -259,6 +293,15 @@ void loop(void) {
   Serial.print(xtarget);
 
   Serial.println();
+  */
+
+  /*
+  mp3Byte = mp3Trigger.read();
+  Serial.print("I received: ");
+  Serial.println(mp3Byte, DEC);
+  if (mp3Byte == 88) {
+    mp3Playing = false;
+  }
   */
 
   sendMove();
