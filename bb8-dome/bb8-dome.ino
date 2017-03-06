@@ -35,13 +35,13 @@ extern uint8_t packetbuffer[];
 ///////////////////////* A/B/C Motor Config *///////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-#define smcRxPinA 5
+#define smcRxPinA 4
 #define smcTxPinA 5
 
-#define smcRxPinB 6
+#define smcRxPinB 4
 #define smcTxPinB 6
 
-#define smcRxPinC 7
+#define smcRxPinC 4
 #define smcTxPinC 7
 
 int mcenter = 0;
@@ -221,13 +221,13 @@ void loop(void) {
           playSound(1);
           break;
         case 5:
-
+          setMotorSpeed(smcSerialA, 3200);
           break;
         case 6:
-
+          setMotorSpeed(smcSerialB, 3200);
           break;
         case 7:
-
+          setMotorSpeed(smcSerialC, 3200);
           break;
         case 8:
 
@@ -241,13 +241,13 @@ void loop(void) {
 
       switch(buttnum) {
         case 5:
-
+          setMotorSpeed(smcSerialA, 0);
           break;
         case 6:
-
+          setMotorSpeed(smcSerialB, 0);
           break;
         case 7:
-
+          setMotorSpeed(smcSerialC, 0);
           break;
         case 8:
 
