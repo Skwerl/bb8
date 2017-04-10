@@ -7,6 +7,7 @@
 #include <Servo.h>
 #include <SPI.h>
 #include <SoftwareSerial.h>
+#include <Adafruit_NeoPixel.h>
 
 #include "Adafruit_BLE.h"
 #include "Adafruit_BluefruitLE_SPI.h"
@@ -35,13 +36,13 @@ extern uint8_t packetbuffer[];
 ///////////////////////* A/B/C Motor Config *///////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-#define smcRxPinA 4
+#define smcRxPinA 0
 #define smcTxPinA 5
 
-#define smcRxPinB 4
+#define smcRxPinB 0
 #define smcTxPinB 6
 
-#define smcRxPinC 4
+#define smcRxPinC 0
 #define smcTxPinC 7
 
 int mcenter = 0;
@@ -101,6 +102,13 @@ void stopSound() {
 }
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
+///////////////////////* Neopixel Config *//////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+#define NEO_A 4
+Adafruit_NeoPixel strip_a = Adafruit_NeoPixel(3, NEO_A);
+
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
 ///////////////////////* BB-8 Logic *///////////////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
@@ -148,6 +156,14 @@ void error(const __FlashStringHelper*err) {
 }
 
 void setup(void) {
+
+  // Lights!
+  strip_a.begin();
+  strip_a.setBrightness(80);
+  strip_a.setPixelColor(0, 10, 30, 120);
+  strip_a.setPixelColor(1, 40, 220, 250);
+  strip_a.setPixelColor(2, 255, 255, 255);
+  strip_a.show();
 
   // Serial, Motor
   smcSerialA.begin(19200);
@@ -220,17 +236,31 @@ void loop(void) {
         case 1:
           playSound(1);
           break;
-        case 5:
-          setMotorSpeed(smcSerialA, 3200);
+        case 2:
+          playSound(51);
           break;
-        case 6:
-          setMotorSpeed(smcSerialB, 3200);
+        case 3:
+          playSound(52);
+          break;
+        case 4:
+          playSound(53);
+          break;
+        
+        case 5: // up
+
+          break;
+        case 6: // down
+
           break;
         case 7:
-          setMotorSpeed(smcSerialC, 3200);
+          setMotorSpeed(smcSerialA, 1200);
+          setMotorSpeed(smcSerialB, -1200);
+          setMotorSpeed(smcSerialC, 1200);
           break;
         case 8:
-
+          setMotorSpeed(smcSerialA, -1200);
+          setMotorSpeed(smcSerialB, 1200);
+          setMotorSpeed(smcSerialC, -1200);
           break;
       }
     
@@ -240,17 +270,22 @@ void loop(void) {
     } else {
 
       switch(buttnum) {
+
+         case 2:
+          setMotorSpeed(smcSerialB, 0);
+          break;       
+        
         case 5:
-          setMotorSpeed(smcSerialA, 0);
+
           break;
         case 6:
-          setMotorSpeed(smcSerialB, 0);
+
           break;
         case 7:
-          setMotorSpeed(smcSerialC, 0);
-          break;
         case 8:
-
+          setMotorSpeed(smcSerialA, 0);
+          setMotorSpeed(smcSerialB, 0);
+          setMotorSpeed(smcSerialC, 0);
           break;
       }
 
