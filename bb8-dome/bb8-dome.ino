@@ -137,38 +137,10 @@ Adafruit_NeoPixel strip_a = Adafruit_NeoPixel(3, NEO_A);
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 /*
-int ytarget = 0;
-int xtarget = xcenter;
 
-boolean driveN = false;
-boolean driveS = false;
-boolean driveE = false;
-boolean driveW = false;
+TBD
 
-void restDrive(void) {
-  ytarget = 0;
-  xtarget = xcenter;
-  driveN = false;
-  driveS = false;
-  driveE = false;
-  driveW = false;
-}
 */
-
-void sendMove(void) {
-
-  /*
-  Serial.print("SEND: ");
-  Serial.print(ytarget);
-  Serial.print(",");
-  Serial.print(xtarget);
-  Serial.println();  
-  */
-
-  //xaxis.write(xtarget);
-  //setMotorSpeed(smcSerialA, ytarget);
-
-}
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 ///////////////////////* Arduino *//////////////////////////////////////////////////////////////////
@@ -304,7 +276,5 @@ void loop(void) {
     }
   
   }
-
-  sendMove();
 
 }
