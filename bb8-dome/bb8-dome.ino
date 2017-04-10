@@ -37,13 +37,13 @@ extern uint8_t packetbuffer[];
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 #define smcRxPinA 0
-#define smcTxPinA 5
+#define smcTxPinA 6
 
 #define smcRxPinB 0
-#define smcTxPinB 6
+#define smcTxPinB 7
 
 #define smcRxPinC 0
-#define smcTxPinC 7
+#define smcTxPinC 5
 
 int mcenter = 0;
 int mfactor = 320;
@@ -68,6 +68,30 @@ void setMotorSpeed(SoftwareSerial &smcSerial, int speed) {
   }
   smcSerial.write(speed & 0x1F);
   smcSerial.write(speed >> 5);
+}
+
+void moveTowards(float degree, int magnitude) {
+  
+  float theta = degree/57.2957795; 
+  
+  float vx = cos(theta)*magnitude;
+  float vy = sin(theta)*magnitude;
+  float sqrt3o2 = 1.0*sqrt(3)/2;
+  
+  float w1 = -vx;
+  float w2 = 0.5*vx - sqrt3o2 * vy;
+  float w3 = 0.5*vx + sqrt3o2 * vy;
+  
+  setMotorSpeed(smcSerialA, w1);
+  setMotorSpeed(smcSerialB, w2);
+  setMotorSpeed(smcSerialC, w3);
+
+}
+
+void stopAllMotors() {
+  setMotorSpeed(smcSerialA, 0);
+  setMotorSpeed(smcSerialB, 0);
+  setMotorSpeed(smcSerialC, 0);
 }
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
@@ -207,6 +231,8 @@ void setup(void) {
   Serial.println(F("Switching to DATA mode!"));
   ble.setMode(BLUEFRUIT_MODE_DATA);
 
+  playSound(21);
+
 }
 
 void loop(void) {
@@ -219,8 +245,9 @@ void loop(void) {
     boolean pressed = packetbuffer[3] - '0';
   
     if (pressed) {
-
+      
       switch(buttnum) {
+
         case 1:
           playSound(1);
           break;
@@ -234,49 +261,43 @@ void loop(void) {
           playSound(53);
           break;
         
-        case 5: // up
+        case 5: // UP
+          moveTowards(0,1000);
+          break;
+        case 6: // DOWN
+          moveTowards(180,1000);
+          break;
 
+        case 7: // LEFT
+          setMotorSpeed(smcSerialA, -1000);
+          setMotorSpeed(smcSerialB, -1000);
+          setMotorSpeed(smcSerialC, -1000);
           break;
-        case 6: // down
+ 
+        case 8: // RIGHT
+          setMotorSpeed(smcSerialA, 1000);
+          setMotorSpeed(smcSerialB, 1000);
+          setMotorSpeed(smcSerialC, 1000);
+          break;
 
-          break;
-        case 7:
-          setMotorSpeed(smcSerialA, 1200);
-          setMotorSpeed(smcSerialB, -1200);
-          setMotorSpeed(smcSerialC, 1200);
-          break;
-        case 8:
-          setMotorSpeed(smcSerialA, -1200);
-          setMotorSpeed(smcSerialB, 1200);
-          setMotorSpeed(smcSerialC, -1200);
-          break;
       }
-    
+      
       Serial.print(buttnum);
       Serial.println("PRESSED");
 
     } else {
 
       switch(buttnum) {
-
-         case 2:
-          setMotorSpeed(smcSerialB, 0);
-          break;       
-        
+      
         case 5:
-
-          break;
         case 6:
-
-          break;
         case 7:
         case 8:
-          setMotorSpeed(smcSerialA, 0);
-          setMotorSpeed(smcSerialB, 0);
-          setMotorSpeed(smcSerialC, 0);
+          stopAllMotors();
           break;
-      }
 
+      }
+      
       Serial.print(buttnum);
       Serial.println("RELEASED");
 
