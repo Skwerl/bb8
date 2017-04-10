@@ -156,7 +156,7 @@ void error(const __FlashStringHelper*err) {
 }
 
 void setup(void) {
-
+  
   // Lights!
   strip_a.begin();
   strip_a.setBrightness(80);
@@ -164,7 +164,7 @@ void setup(void) {
   strip_a.setPixelColor(1, 40, 220, 250);
   strip_a.setPixelColor(2, 255, 255, 255);
   strip_a.show();
-
+  
   // Serial, Motor
   smcSerialA.begin(19200);
   smcSerialB.begin(19200);
@@ -174,10 +174,10 @@ void setup(void) {
   smcSerialB.write(0xAA);
   smcSerialC.write(0xAA);
   smcSafeStart();
-
+  
   // Serial, Sounds
   mp3Trigger.begin(38400);
-
+  
   // Serial, Bluetooth / Monitor
   Serial.begin(115200);
   Serial.print(F("Initializing Bluefruit LE module: "));
@@ -194,19 +194,10 @@ void setup(void) {
   ble.echo(false);
   Serial.println("Requesting Bluefruit info:");
   ble.info();
-  /*
-  Serial.println(F("Please use Adafruit Bluefruit LE app to connect in Controller mode"));
-  Serial.println(F("Then activate/use the sensors, color picker, game controller, etc!"));
-  Serial.println();
-  */
   ble.verbose(false);
-
-  /* Wait for connection */
   while (!ble.isConnected()) {
-      delay(500);
+    delay(500);
   }
-
-  Serial.println(F("******************************"));
 
   if (ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION)) {
     Serial.println(F("Change LED activity to " MODE_LED_BEHAVIOR));
@@ -216,14 +207,11 @@ void setup(void) {
   Serial.println(F("Switching to DATA mode!"));
   ble.setMode(BLUEFRUIT_MODE_DATA);
 
-  //Serial.println(F("******************************"));
-
 }
 
 void loop(void) {
 
   uint8_t len = readPacket(&ble, BLE_READPACKET_TIMEOUT);
-  //if (len == 0) return;
 
   if (packetbuffer[1] == 'B') {
 
@@ -295,49 +283,6 @@ void loop(void) {
     }
   
   }
-
-  /*
-  if (driveN) { if (ytarget < (ycenter+yrange)) { ytarget += yfactor; } }
-  if (driveS) { if (ytarget > (ycenter-yrange)) { ytarget -= yfactor; } }
-  if (driveW) { if (xtarget < (xcenter+xrange)) { xtarget += xfactor; } }
-  if (driveE) { if (xtarget > (xcenter-xrange)) { xtarget -= xfactor; } }
-
-  if (!driveN && !driveS) {
-     ytarget = 0;
-  }
-
-  if (!driveE && !driveW) {
-     xtarget = xcenter;
-  }
-  */
-
-  /*
-  Serial.print(driveN); Serial.print(""); 
-  Serial.print(driveS); Serial.print(""); 
-  Serial.print(driveE); Serial.print(""); 
-  Serial.print(driveW); Serial.print(""); 
-  */
-
-  /*
-  Serial.print("YTARGET: ");
-  Serial.print(ytarget);
-
-  Serial.print(" // ");
-
-  Serial.print("XTARGET: ");
-  Serial.print(xtarget);
-
-  Serial.println();
-  */
-
-  /*
-  mp3Byte = mp3Trigger.read();
-  Serial.print("I received: ");
-  Serial.println(mp3Byte, DEC);
-  if (mp3Byte == 88) {
-    mp3Playing = false;
-  }
-  */
 
   sendMove();
 
