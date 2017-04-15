@@ -101,6 +101,7 @@ void stopAllMotors() {
 #define mp3RxPin 2
 #define mp3TxPin 3
 
+int volume = 255;
 int mp3Byte = 0;
 boolean mp3Playing = false;
 
@@ -173,6 +174,10 @@ void setup(void) {
   
   // Serial, Sounds
   mp3Trigger.begin(38400);
+  
+  byte volbyte = map((volume-255), 0, 1023, 0, 255);
+  mp3Trigger.write('v');
+  mp3Trigger.write(volbyte);
   
   // Serial, Bluetooth / Monitor
   Serial.begin(115200);
