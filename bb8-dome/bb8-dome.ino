@@ -131,17 +131,24 @@ void stopSound() {
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 #define NEO_A 4
-Adafruit_NeoPixel strip_a = Adafruit_NeoPixel(3, NEO_A);
+Adafruit_NeoPixel strip_a = Adafruit_NeoPixel(2, NEO_A);
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 ///////////////////////* BB-8 Logic *///////////////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-/*
+#define projectorPin 19
+boolean projectorOn = false;
 
-TBD
-
-*/
+void toggleProjector() {
+  if (projectorOn == true) {
+    digitalWrite(projectorPin, LOW);
+    projectorOn = false;
+  } else {
+    digitalWrite(projectorPin, HIGH);
+    projectorOn = true;
+  }
+}
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 ///////////////////////* Arduino *//////////////////////////////////////////////////////////////////
@@ -155,11 +162,12 @@ void error(const __FlashStringHelper*err) {
 void setup(void) {
   
   // Lights!
+  pinMode(projectorPin, OUTPUT);
+  digitalWrite(projectorPin, LOW);
   strip_a.begin();
-  strip_a.setBrightness(80);
-  strip_a.setPixelColor(0, 10, 30, 120);
-  strip_a.setPixelColor(1, 40, 220, 250);
-  strip_a.setPixelColor(2, 255, 255, 255);
+  strip_a.setBrightness(255);
+  strip_a.setPixelColor(0, 0, 0, 20);
+  strip_a.setPixelColor(1, 0, 70, 30);
   strip_a.show();
   
   // Serial, Motor
@@ -235,7 +243,8 @@ void loop(void) {
           playSound(52);
           break;
         case 4:
-          playSound(53);
+          //playSound(53);
+          toggleProjector();
           break;
         
         case 5: // UP
