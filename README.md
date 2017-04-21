@@ -17,10 +17,9 @@
 
 ## Acquire:
 
-* More 10" Acrylic Discs
+* More 8" Acrylic Discs
 * Printer Replacement Parts
 * Sand Bags
-* 3/4" Rocker Switch
 * Functioning Nintendo Switch Controller Setup
 * Longer Panel Screws?
 
