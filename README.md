@@ -10,25 +10,23 @@
 
 ## Can Build Now:
 
+* Drill Dome Mount Panel Mark II
 * Re-Paint Dome Skirt, Attach to Dome Ring
-* Design Neopixel Clip & Install in Dome
-* Design 9DOF Mount for Body
 * Design Dome Mount Ring
+* Design Neopixel Clip & Install in Dome
+* Assemble Dome Bot Mark II
+* Design 9DOF Mount for Body
+* Programming for Nintendo Switch Bluetooth Packets
 
 ## Acquire:
 
-* More 8" Acrylic Discs
 * Printer Replacement Parts
 * Sand Bags
-* Functioning Nintendo Switch Controller Setup
 * Longer Panel Screws?
 
 ## To Build Next, Once I Have the Supplies:
 
-* Drill Dome Mount Panel Mark II
 * Shape Steel Panel Layers
-* Assemble Dome Bot Mark II
-* Programming for Nintendo Switch Bluetooth Packets
 * Prime & Paint Round Panels (White, Chrome)
 * Print Light Screens?
 
