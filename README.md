@@ -10,7 +10,6 @@
 
 ## Can Build Now:
 
-* Drill Dome Mount Panel Mark II
 * Re-Paint Dome Skirt, Attach to Dome Ring
 * Design Dome Mount Ring
 * Design Neopixel Clip & Install in Dome
@@ -20,12 +19,14 @@
 
 ## Acquire:
 
+* 13/16" Hole Saw
 * Printer Replacement Parts
 * Sand Bags
 * Longer Panel Screws?
 
 ## To Build Next, Once I Have the Supplies:
 
+* Drill Dome Mount Panel Mark II
 * Shape Steel Panel Layers
 * Prime & Paint Round Panels (White, Chrome)
 * Print Light Screens?
