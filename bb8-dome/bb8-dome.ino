@@ -36,14 +36,17 @@ extern uint8_t packetbuffer[];
 ///////////////////////* A/B/C Motor Config *///////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+// Blue
 #define smcRxPinA 0
 #define smcTxPinA 6
 
+// Green
 #define smcRxPinB 0
-#define smcTxPinB 7
+#define smcTxPinB 5
 
+// Purple
 #define smcRxPinC 0
-#define smcTxPinC 5
+#define smcTxPinC 7
 
 int mcenter = 0;
 int mfactor = 320;
