@@ -17,7 +17,6 @@
 
 ## Acquire:
 
-* 13/16" Hole Saw
 * USB Host Shields & Bluetooth Dongles
 * Printer Replacement Parts
 * Sand Bags
@@ -25,7 +24,6 @@
 
 ## To Build Next, Once I Have the Supplies:
 
-* Drill Dome Mount Panel Mark II
 * Assemble Dome Bot Mark II
 * Shape Steel Panel Layers
 * Prime & Paint Round Panels (White, Chrome)
