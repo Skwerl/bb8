@@ -18,7 +18,6 @@
 ## Acquire:
 
 * USB Host Shields & Bluetooth Dongles
-* Printer Replacement Parts
 * Sand Bags
 * Longer Panel Screws?
 
