@@ -3,8 +3,6 @@
 ## While Building:
 
 * Print 6 Round Panels
-* Print Dome Chassis Mark II
-* Print Three New Magnet Casters
 * Print 9DOF Mount for Body
 * Print Neopixel Clips
 
@@ -17,13 +15,11 @@
 
 ## Acquire:
 
-* USB Host Shields & Bluetooth Dongles
 * Sand Bags
 * Longer Panel Screws?
 
 ## To Build Next, Once I Have the Supplies:
 
-* Assemble Dome Bot Mark II
 * Shape Steel Panel Layers
 * Prime & Paint Round Panels (White, Chrome)
 * Print Light Screens?
