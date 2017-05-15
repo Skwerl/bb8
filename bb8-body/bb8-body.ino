@@ -2,44 +2,40 @@
 ///////////////////////* Libraries *////////////////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-#include <string.h>
-#include <Arduino.h>
 #include <Servo.h>
-#include <SPI.h>
 #include <SoftwareSerial.h>
 
-#include "Adafruit_BLE.h"
-#include "Adafruit_BluefruitLE_SPI.h"
-#include "Adafruit_BluefruitLE_UART.h"
-
-#include "BluefruitConfig.h"
+#include "SwitchBT.h"
+#include <usbhub.h>
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 ///////////////////////* Bluetooth Config */////////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-#define FACTORYRESET_ENABLE 0
-#define MINIMUM_FIRMWARE_VERSION "0.6.6"
-#define MODE_LED_BEHAVIOR "MODE"
+USB Usb;
+BTD Btd(&Usb);
 
-SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);
-Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN, BLUEFRUIT_UART_CTS_PIN, BLUEFRUIT_UART_RTS_PIN);
+// To Pair:
+//SwitchBT Switch(&Btd, PAIR);
 
-uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout);
-float parsefloat(uint8_t *buffer);
-void printHex(const uint8_t * data, const uint32_t numBytes);
+// After Pair:
+SwitchBT Switch(&Btd);
 
-extern uint8_t packetbuffer[];
+bool bluetoothInit = false;
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 ///////////////////////* X-Axis Servo Config *//////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
  
 Servo xaxis;
-int xcenter = 117;
-int xpos = xcenter;
-int xfactor = 2;
-int xrange = 20;
+
+float xcenter = 117;
+float xpos = xcenter;
+float xrange = 20;
+float xfactor = 2;
+
+float xprevious = xcenter;
+float xgate = xfactor*3;
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 ///////////////////////* Y-Axis Motor Config *//////////////////////////////////////////////////////
@@ -48,9 +44,12 @@ int xrange = 20;
 #define smcRxPin 2
 #define smcTxPin 3
 
-int ycenter = 0;
-int yfactor = 320;
-int yrange = 3200;
+float ycenter = 0;
+float yrange = 1200;
+float yfactor = 10;
+
+float yprevious = ycenter;
+float ygate = yfactor*3;
 
 SoftwareSerial smcSerial = SoftwareSerial(smcRxPin, smcTxPin);
 
@@ -70,16 +69,198 @@ void setMotorSpeed(int speed) {
 }
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
+///////////////////////* Switch Parsing *///////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+byte* Report;
+
+struct SwitchButtons {
+  bool Idle;
+  bool U_Button;
+  bool D_Button;
+  bool L_Button;
+  bool R_Button;
+  bool SL_Button;
+  bool SR_Button;
+  bool L_Trigger;
+  bool ZL_Trigger;
+  bool R_Trigger;
+  bool ZR_Trigger;
+  bool Stick_Button;
+  bool Select_Button;
+  bool Action_Button;
+  int Analog_Stick;
+};
+SwitchButtons reset = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+SwitchButtons state = reset;
+
+void handleEvent() {
+  
+  if (Report[0] == 0 && Report[1] == 0 && Report[2] == 8) {
+
+    allButtonsReleased();
+    state.Idle = 1;
+
+  } else {
+
+    state.Idle = 0;
+
+    switch(Report[0]) {
+      case 4:
+        state.U_Button = 1;
+        break;
+      case 2:
+        state.D_Button = 1;
+        break;
+      case 1:
+        state.L_Button = 1;
+        break;
+      case 8:
+        state.R_Button = 1;
+        break;
+      case 16:
+        state.SL_Button = 1;
+        break;
+      case 32:
+        state.SR_Button = 1;
+        break;
+    }
+    switch(Report[1]) {
+      case 64:
+        state.L_Trigger = 1;
+        state.R_Trigger = 1;
+        break;
+      case 128:
+        state.ZL_Trigger = 1;
+        state.ZR_Trigger = 1;
+        break;
+      case 1:
+      case 2:
+        state.Select_Button = 1;
+        break;
+      case 32:
+        state.Action_Button = 1;
+        break;
+      case 4:
+      case 8:
+        state.Stick_Button = 1;
+        break;
+    }
+    switch(Report[2]) {
+      case 8:
+        state.Analog_Stick = 0;
+        break;
+      case 7:
+        state.Analog_Stick = 45;
+        break;
+      case 0:
+        state.Analog_Stick = 90;
+        break;
+      case 1:
+        state.Analog_Stick = 135;
+        break;
+      case 2:
+        state.Analog_Stick = 180;
+        break;
+      case 3:
+        state.Analog_Stick = 225;
+        break;
+      case 4:
+        state.Analog_Stick = 270;
+        break;
+      case 5:
+        state.Analog_Stick = 315;
+        break;
+      case 6:
+        state.Analog_Stick = 360;
+        break;
+    }
+
+  }
+
+  if (!bluetoothInit) {
+    if (state.Analog_Stick > 0) {
+      return;    
+    } else {
+      bluetoothInit = true;
+      Serial.println("");
+      Serial.println("Bluetooth Connection Established");
+    }
+  } else {
+    
+    /*
+    Serial.print(state.Idle);
+    Serial.print(state.U_Button);
+    Serial.print(state.D_Button);
+    Serial.print(state.L_Button);
+    Serial.print(state.R_Button);
+    Serial.print(state.SL_Button);
+    Serial.print(state.SR_Button);
+    Serial.print(state.L_Trigger);
+    Serial.print(state.ZL_Trigger);
+    Serial.print(state.Stick_Button);
+    Serial.print(state.Select_Button);
+    Serial.print(state.Action_Button);
+    Serial.print(state.Analog_Stick);
+    Serial.println("");
+    */
+    
+    doAction();
+    
+  }
+
+}
+
+void allButtonsReleased() {
+  state = reset;
+}
+
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
 ///////////////////////* BB-8 Logic *///////////////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-int ytarget = 0;
-int xtarget = xcenter;
+float ytarget = 0;
+float xtarget = xcenter;
 
 boolean driveN = false;
 boolean driveS = false;
 boolean driveE = false;
 boolean driveW = false;
+
+void doAction(void) {
+
+  driveS = state.U_Button;
+  driveN = state.D_Button;
+  driveE = state.L_Button;
+  driveW = state.R_Button;
+
+  if (state.Analog_Stick > 0) {
+    if (state.Analog_Stick >= 315 || state.Analog_Stick <= 045) { driveS = true; }
+    if (state.Analog_Stick >= 045 && state.Analog_Stick <= 135) { driveW = true; }
+    if (state.Analog_Stick >= 135 && state.Analog_Stick <= 225) { driveN = true; }
+    if (state.Analog_Stick >= 225 && state.Analog_Stick <= 315) { driveE = true; }
+  }
+
+  if (driveN) { if (ytarget < (ycenter+yrange)) { ytarget += yfactor; } }
+  if (driveS) { if (ytarget > (ycenter-yrange)) { ytarget -= yfactor; } }
+  if (driveW) { if (xtarget < (xcenter+xrange)) { xtarget += xfactor; } }
+  if (driveE) { if (xtarget > (xcenter-xrange)) { xtarget -= xfactor; } }
+
+  if (!driveN && !driveS) {
+     ytarget = 0;
+  }
+
+  if (!driveE && !driveW) {
+     xtarget = xcenter;
+  }
+
+  if (state.Action_Button) {
+    restDrive();
+  }
+
+  sendMove();
+
+}
 
 void restDrive(void) {
   ytarget = 0;
@@ -92,16 +273,17 @@ void restDrive(void) {
 
 void sendMove(void) {
 
-  /*
-  Serial.print("SEND: ");
-  Serial.print(ytarget);
-  Serial.print(",");
-  Serial.print(xtarget);
-  Serial.println();  
-  */
-
-  xaxis.write(xtarget);
-  setMotorSpeed(ytarget);
+  // Don't terrorize the servo...
+  if (abs(xprevious-xtarget) >= xgate) {
+      xprevious = xtarget;
+      xaxis.write(xtarget);
+  }
+  
+  // Don't terrorize the motor controller...
+  if (abs(yprevious-ytarget) >= ygate) {
+      yprevious = ytarget;
+      setMotorSpeed(ytarget);
+  }
 
 }
 
@@ -122,139 +304,29 @@ void setup(void) {
   smcSerial.write(0xAA);
   smcSafeStart();
 
-  // Serial, Bluetooth / Monitor
-  Serial.begin(115200);
-  Serial.print(F("Initializing Bluefruit LE module: "));
-  if (!ble.begin(VERBOSE_MODE)) {
-    error(F("Couldn't find Bluefruit, make sure it's in CMD mode & check wiring?"));
-  }
-  Serial.println(F("OK!"));
-  if (FACTORYRESET_ENABLE) {
-    Serial.println(F("Performing a factory reset: "));
-    if (!ble.factoryReset()) {
-      error(F("Couldn't factory reset!"));
-    }
-  }
-  ble.echo(false);
-  Serial.println("Requesting Bluefruit info:");
-  ble.info();
-  /*
-  Serial.println(F("Please use Adafruit Bluefruit LE app to connect in Controller mode"));
-  Serial.println(F("Then activate/use the sensors, color picker, game controller, etc!"));
-  Serial.println();
-  */
-  ble.verbose(false);
-
-  /* Wait for connection */
-  while (!ble.isConnected()) {
-      delay(500);
-  }
-
-  Serial.println(F("******************************"));
-
-  if (ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION)) {
-    Serial.println(F("Change LED activity to " MODE_LED_BEHAVIOR));
-    ble.sendCommandCheckOK("AT+HWModeLED=" MODE_LED_BEHAVIOR);
-  }
-
-  Serial.println(F("Switching to DATA mode!"));
-  ble.setMode(BLUEFRUIT_MODE_DATA);
-
-  //Serial.println(F("******************************"));
-
   // PWM, Servo
-  xaxis.attach(14);
+  xaxis.attach(5);
   xaxis.write(xpos);
+
+  // Bluetooth
+  Serial.begin(115200);
+  if (Usb.Init() == -1) {
+    Serial.print(F("\r\nOSC did not start"));
+    while (1); // Halt
+  }
+  Serial.print(F("\r\nSwitch Bluetooth Library Started"));
 
 }
 
 void loop(void) {
 
-  uint8_t len = readPacket(&ble, BLE_READPACKET_TIMEOUT);
-  //if (len == 0) return;
+  Usb.Task();
 
-  if (packetbuffer[1] == 'B') {
+  if (Switch.connected()) {
 
-    uint8_t buttnum = packetbuffer[2] - '0';
-    boolean pressed = packetbuffer[3] - '0';
-  
-    if (pressed) {
-
-      switch(buttnum) {
-        case 1:
-          restDrive();
-          break;
-        case 5:
-          driveN = true;
-          break;
-        case 6:
-          driveS = true;
-          break;
-        case 7:
-          driveW = true;
-          break;
-        case 8:
-          driveE = true;
-          break;
-      }
+    Report = Switch.Report;
+    handleEvent();
     
-      //Serial.println("PRESSED");
-
-    } else {
-
-      switch(buttnum) {
-        case 5:
-          driveN = false;
-          break;
-        case 6:
-          driveS = false;
-          break;
-        case 7:
-          driveW = false;
-          break;
-        case 8:
-          driveE = false;
-          break;
-      }
-
-      //Serial.println("RELEASED");
-
-    }
-  
   }
-
-  if (driveN) { if (ytarget < (ycenter+yrange)) { ytarget += yfactor; } }
-  if (driveS) { if (ytarget > (ycenter-yrange)) { ytarget -= yfactor; } }
-  if (driveW) { if (xtarget < (xcenter+xrange)) { xtarget += xfactor; } }
-  if (driveE) { if (xtarget > (xcenter-xrange)) { xtarget -= xfactor; } }
-
-  if (!driveN && !driveS) {
-     ytarget = 0;
-  }
-
-  if (!driveE && !driveW) {
-     xtarget = xcenter;
-  }
-
-  /*
-  Serial.print(driveN); Serial.print(""); 
-  Serial.print(driveS); Serial.print(""); 
-  Serial.print(driveE); Serial.print(""); 
-  Serial.print(driveW); Serial.print(""); 
-  */
-
-  /*
-  Serial.print("YTARGET: ");
-  Serial.print(ytarget);
-
-  Serial.print(" // ");
-
-  Serial.print("XTARGET: ");
-  Serial.print(xtarget);
-
-  Serial.println();
-  */
-
-  sendMove();
 
 }
