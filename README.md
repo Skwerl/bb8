@@ -2,13 +2,13 @@
 
 ## While Building:
 
-* Print 4 More Round Panels
 * Print 9DOF Mount for Body
 * Print Neopixel Clips
 
 ## Can Build Now:
 
 * Re-Paint Dome Skirt
+* Prime & Paint Round Panels (White, Chrome)
 * Design Neopixel Clip & Install in Dome
 * Design 9DOF Mount for Body
 
@@ -21,7 +21,6 @@
 ## To Build Next, Once I Have the Supplies:
 
 * Finish Bluetooth Programming
-* Prime & Paint Round Panels (White, Chrome)
 * Shape Steel Panel Layers
 * Print Light Screens?
 
