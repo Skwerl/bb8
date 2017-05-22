@@ -3,13 +3,12 @@
 ## While Building:
 
 * Print 9DOF Mount for Body
-* Print Neopixel Clips
 
 ## Can Build Now:
 
 * Re-Paint Dome Skirt
 * Prime & Paint Round Panels (White, Chrome)
-* Design Neopixel Clip & Install in Dome
+* Install Dome Neopixels
 * Design 9DOF Mount for Body
 
 ## Acquire:
@@ -28,4 +27,3 @@
 
 * Dome Chassis Mount
 * Programming 9DOF Modules
-* Running Wires for Body Lights
