@@ -6,6 +6,7 @@
 
 ## Can Build Now:
 
+* Finish Bluetooth Programming
 * Re-Paint Dome Skirt
 * Prime & Paint Round Panels (White, Chrome)
 * Install Dome Neopixels
@@ -13,13 +14,11 @@
 
 ## Acquire:
 
-* 5v USB Host Shield
 * Sand Bags
 * Longer Panel Screws?
 
 ## To Build Next, Once I Have the Supplies:
 
-* Finish Bluetooth Programming
 * Shape Steel Panel Layers
 * Print Light Screens?
 
