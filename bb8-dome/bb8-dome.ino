@@ -98,7 +98,7 @@ void stopAllMotors() {
 
 int volume = 255;
 int mp3Byte = 0;
-boolean mp3Playing = false;
+bool mp3Playing = false;
 
 SoftwareSerial mp3Trigger = SoftwareSerial(mp3RxPin, mp3TxPin);
 
@@ -125,8 +125,8 @@ void stopSound() {
 ///////////////////////* Neopixel Config *//////////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-#define NEO_A 4
-Adafruit_NeoPixel strip_a = Adafruit_NeoPixel(2, NEO_A);
+//#define NEO_A 4
+//Adafruit_NeoPixel strip_a = Adafruit_NeoPixel(2, NEO_A);
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 ///////////////////////* Switch Parsing *///////////////////////////////////////////////////////////
@@ -253,10 +253,11 @@ void handleEvent() {
       bluetoothInit = true;
       Serial.println("");
       Serial.println("Bluetooth Connection Established");
-      playSound(21);
+      wakeUp();
     }
   } else {
 
+    /*
     Serial.print(state.Idle);
     Serial.print(state.Y_Button);
     Serial.print(state.X_Button);
@@ -271,6 +272,7 @@ void handleEvent() {
     Serial.print(state.Action_Button);
     Serial.print(state.Analog_Stick);
     Serial.println("");
+    */
     
     doAction();
     
@@ -287,23 +289,73 @@ void allButtonsReleased() {
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 #define projectorPin 19
-boolean projectorOn = false;
+bool projectorOn = false;
 
 void toggleProjector() {
-  if (projectorOn == true) {
-    digitalWrite(projectorPin, LOW);
-    projectorOn = false;
-  } else {
-    digitalWrite(projectorPin, HIGH);
-    projectorOn = true;
+  if (!already_done()) {
+    if (projectorOn == true) {
+      digitalWrite(projectorPin, LOW);
+      projectorOn = false;
+    } else {
+      digitalWrite(projectorPin, HIGH);
+      projectorOn = true;
+    }
+    now_done();
   }
 }
 
+void doAction() {
 
-void doAction(void) {
+  if (state.B_Button) {
+    playSound(1);
+  }
 
-  // Port old logic over to here...
+  if (state.R_Trigger) {
+    toggleProjector();
+  }
 
+  if (state.ZR_Trigger && state.Analog_Stick == 90) {
+    setMotorSpeed(smcSerialA, 1000);
+    setMotorSpeed(smcSerialB, 1000);
+    setMotorSpeed(smcSerialC, 1000);
+  }
+
+  if (state.ZR_Trigger && state.Analog_Stick == 270) {
+    setMotorSpeed(smcSerialA, -1000);
+    setMotorSpeed(smcSerialB, -1000);
+    setMotorSpeed(smcSerialC, -1000);
+  }
+
+  if (state.Analog_Stick <= 0) {
+    stopAllMotors();
+  }
+
+}
+
+void wakeUp() {
+  playSound(21);
+}
+
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+///////////////////////* Timing Control *///////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+#define trigger_gate 4096
+int trigger_counter = trigger_gate;
+
+void increment_counter(void) {
+  if (trigger_counter > 32000) { trigger_counter = trigger_gate; } trigger_counter++;
+}
+
+bool already_done() {
+  if (trigger_counter <= trigger_gate) {
+    return true;
+  }
+  return false;
+}
+
+void now_done() {
+  trigger_counter = 0;
 }
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
@@ -320,11 +372,13 @@ void setup(void) {
   // Lights!
   pinMode(projectorPin, OUTPUT);
   digitalWrite(projectorPin, LOW);
+  /*
   strip_a.begin();
   strip_a.setBrightness(255);
   strip_a.setPixelColor(0, 0, 0, 20);
   strip_a.setPixelColor(1, 0, 70, 30);
   strip_a.show();
+  */
   
   // Serial, Motor
   smcSerialA.begin(19200);
@@ -351,8 +405,6 @@ void setup(void) {
   }
   Serial.print(F("\r\nSwitch Bluetooth Library Started"));
 
-  //playSound(21);
-
 }
 
 void loop(void) {
@@ -365,5 +417,7 @@ void loop(void) {
     handleEvent();
     
   }
+
+  increment_counter();
 
 }
