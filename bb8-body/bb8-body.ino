@@ -80,6 +80,10 @@ struct SwitchButtons {
   bool D_Button;
   bool L_Button;
   bool R_Button;
+  bool Y_Button;
+  bool X_Button;
+  bool B_Button;
+  bool A_Button;
   bool SL_Button;
   bool SR_Button;
   bool L_Trigger;
@@ -91,7 +95,7 @@ struct SwitchButtons {
   bool Action_Button;
   int Analog_Stick;
 };
-SwitchButtons reset = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+SwitchButtons reset = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 SwitchButtons state = reset;
 
 void handleEvent() {
@@ -108,15 +112,19 @@ void handleEvent() {
     switch(Report[0]) {
       case 4:
         state.U_Button = 1;
+        state.B_Button = 1;
         break;
       case 2:
         state.D_Button = 1;
+        state.X_Button = 1;
         break;
       case 1:
         state.L_Button = 1;
+        state.A_Button = 1;
         break;
       case 8:
         state.R_Button = 1;
+        state.Y_Button = 1;
         break;
       case 16:
         state.SL_Button = 1;
