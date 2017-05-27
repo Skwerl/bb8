@@ -55,6 +55,7 @@ void smcSafeStart() {
 }
 
 void setMotorSpeed(SoftwareSerial &smcSerial, int speed) {
+  smcSerial.write(0x83);
   if (speed < 0) {
     smcSerial.write(0x86);
     speed = -speed;
@@ -383,9 +384,9 @@ void setup(void) {
   strip_a.show();
   
   // Serial, Motor
-  smcSerialA.begin(19200);
-  smcSerialB.begin(19200);
-  smcSerialC.begin(19200);
+  smcSerialA.begin(2400);
+  smcSerialB.begin(2400);
+  smcSerialC.begin(2400);
   delay(5);
   smcSerialA.write(0xAA);
   smcSerialB.write(0xAA);
