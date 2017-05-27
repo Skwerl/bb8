@@ -8,18 +8,16 @@
 
 * Re-Paint Dome Skirt
 * Prime & Paint Round Panels (White, Chrome)
-* Install Dome Neopixels
 * Design 9DOF Mount for Body
+* Install Tone Buzzer in Body
 
 ## Acquire:
 
-* New 5v Arduino Pro
 * Sand Bags
 * Longer Panel Screws?
 
 ## To Build Next, Once I Have the Supplies:
 
-* Finish Bluetooth Programming
 * Shape Steel Panel Layers
 * Print Light Screens?
 
