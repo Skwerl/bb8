@@ -30,15 +30,15 @@ bool bluetoothInit = false;
 
 // Blue
 #define smcRxPinA 0
-#define smcTxPinA 5
+#define smcTxPinA 15
 
 // Green
 #define smcRxPinB 0
-#define smcTxPinB 4
+#define smcTxPinB 14
 
 // Purple
 #define smcRxPinC 0
-#define smcTxPinC 6
+#define smcTxPinC 16
 
 int mcenter = 0;
 int mfactor = 320;
@@ -66,6 +66,8 @@ void setMotorSpeed(SoftwareSerial &smcSerial, int speed) {
 }
 
 void moveTowards(float degree, int magnitude) {
+
+  if (degree == 360) { degree = 0; }
   
   float theta = degree/57.2957795; 
   
@@ -98,35 +100,29 @@ void stopAllMotors() {
 
 int volume = 255;
 int mp3Byte = 0;
-bool mp3Playing = false;
 
 SoftwareSerial mp3Trigger = SoftwareSerial(mp3RxPin, mp3TxPin);
 
 void playSound(int sample) {
-  if (mp3Playing == false) {
+  if (!already_done()) {
     Serial.print("Playing sample #");
     Serial.println(sample);
     mp3Trigger.write('t');
     mp3Trigger.write(sample);
-    // Need to get mp3Trigger.read() working...
-    //mp3Playing = true;
+    now_done();
   }
 }
 
 void stopSound() {
-  if (mp3Playing == true) {
-    Serial.println("Stop");
-    mp3Trigger.write('O');
-    mp3Playing = false;
-  }
+  mp3Trigger.write('O');
 }
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 ///////////////////////* Neopixel Config *//////////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-//#define NEO_A 4
-//Adafruit_NeoPixel strip_a = Adafruit_NeoPixel(2, NEO_A);
+#define NEO_A 17
+Adafruit_NeoPixel strip_a = Adafruit_NeoPixel(2, NEO_A);
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 ///////////////////////* Switch Parsing *///////////////////////////////////////////////////////////
@@ -288,7 +284,7 @@ void allButtonsReleased() {
 ///////////////////////* BB-8 Logic *///////////////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-#define projectorPin 19
+#define projectorPin 18
 bool projectorOn = false;
 
 void toggleProjector() {
@@ -326,6 +322,10 @@ void doAction() {
     setMotorSpeed(smcSerialC, -1000);
   }
 
+  if (!state.ZR_Trigger && state.Analog_Stick > 0) {
+      moveTowards(state.Analog_Stick,1000);
+  }
+
   if (state.Analog_Stick <= 0) {
     stopAllMotors();
   }
@@ -333,6 +333,9 @@ void doAction() {
 }
 
 void wakeUp() {
+  strip_a.setPixelColor(0, 0, 0, 255);
+  strip_a.setPixelColor(1, 0, 50, 70);
+  strip_a.show();
   playSound(21);
 }
 
@@ -340,7 +343,7 @@ void wakeUp() {
 ///////////////////////* Timing Control *///////////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-#define trigger_gate 4096
+#define trigger_gate 40
 int trigger_counter = trigger_gate;
 
 void increment_counter(void) {
@@ -372,13 +375,12 @@ void setup(void) {
   // Lights!
   pinMode(projectorPin, OUTPUT);
   digitalWrite(projectorPin, LOW);
-  /*
+  pinMode(NEO_A, OUTPUT);
   strip_a.begin();
   strip_a.setBrightness(255);
-  strip_a.setPixelColor(0, 0, 0, 20);
-  strip_a.setPixelColor(1, 0, 70, 30);
+  strip_a.setPixelColor(0, 255, 0, 0);
+  strip_a.setPixelColor(1, 255, 0, 0);
   strip_a.show();
-  */
   
   // Serial, Motor
   smcSerialA.begin(19200);
