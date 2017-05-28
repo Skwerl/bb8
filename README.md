@@ -1,15 +1,11 @@
 # BB-8 To-Do List
 
-## While Building:
-
-* Print 9DOF Mount for Body
-
 ## Can Build Now:
 
+* Design Dome Chassis Mount
+* Design 9DOF Mount for Body
 * Re-Paint Dome Skirt
 * Prime & Paint Round Panels (White, Chrome)
-* Design 9DOF Mount for Body
-* Install Tone Buzzer in Body
 
 ## Acquire:
 
@@ -23,5 +19,4 @@
 
 ## Research / Plan:
 
-* Dome Chassis Mount
 * Programming 9DOF Modules
