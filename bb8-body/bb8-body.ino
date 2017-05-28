@@ -193,6 +193,7 @@ void handleEvent() {
       bluetoothInit = true;
       Serial.println("");
       Serial.println("Bluetooth Connection Established");
+      wakeUp();
     }
   } else {
     
@@ -226,6 +227,8 @@ void allButtonsReleased() {
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 ///////////////////////* BB-8 Logic *///////////////////////////////////////////////////////////////
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+#define tonePin 4
 
 float ytarget = 0;
 float xtarget = xcenter;
@@ -293,6 +296,16 @@ void sendMove(void) {
       setMotorSpeed(ytarget);
   }
 
+}
+
+void chirp() {
+  tone(tonePin, 2600, 100); delay(110);
+  tone(tonePin, 2600, 100); delay(110);
+  tone(tonePin, 2600, 100); delay(110);
+}
+
+void wakeUp() {
+  chirp();
 }
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
