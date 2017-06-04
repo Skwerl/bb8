@@ -58,6 +58,7 @@ void smcSafeStart() {
 }
 
 void setMotorSpeed(int speed) {
+  smcSerial.write(0x83);
   if (speed < 0) {
     smcSerial.write(0x86);
     speed = -speed;
