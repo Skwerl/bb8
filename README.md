@@ -4,8 +4,7 @@
 
 * Design Dome Chassis Mount
 * Design 9DOF Mount for Body
-* (Re-Print?) Re-Paint Dome Skirt
-* Paint Round Panels (Chrome, Clear)
+* Re-Paint Dome Skirt
 
 ## Acquire:
 
