@@ -9,7 +9,6 @@
 ## Acquire:
 
 * Sand Bags
-* Longer Panel Screws?
 
 ## To Build Next, Once I Have the Supplies:
 
