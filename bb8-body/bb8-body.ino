@@ -4,6 +4,7 @@
 
 #include <Servo.h>
 #include <SoftwareSerial.h>
+#include <Adafruit_NeoPixel.h>
 
 #include "SwitchBT.h"
 #include <usbhub.h>
@@ -68,6 +69,13 @@ void setMotorSpeed(int speed) {
   smcSerial.write(speed & 0x1F);
   smcSerial.write(speed >> 5);
 }
+
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+///////////////////////* Neopixel Config *//////////////////////////////////////////////////////////
+/*////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+#define NEO_A 6
+Adafruit_NeoPixel strip_a = Adafruit_NeoPixel(16, NEO_A);
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////*/
 ///////////////////////* Switch Parsing *///////////////////////////////////////////////////////////
@@ -306,6 +314,23 @@ void chirp() {
 }
 
 void wakeUp() {
+  strip_a.setPixelColor(0, 0, 255, 255);
+  strip_a.setPixelColor(1, 255, 0, 0);
+  strip_a.setPixelColor(2, 0, 0, 255);
+  strip_a.setPixelColor(3, 160, 0, 0);
+  strip_a.setPixelColor(4, 0, 0, 255);
+  strip_a.setPixelColor(5, 160, 0, 0);
+  strip_a.setPixelColor(6, 80, 70, 0);
+  strip_a.setPixelColor(7, 40, 0, 0);
+  strip_a.setPixelColor(8, 80, 0, 0);
+  strip_a.setPixelColor(9, 0, 255, 255);
+  strip_a.setPixelColor(10, 0, 0, 160);
+  strip_a.setPixelColor(11, 0, 0, 160);
+  strip_a.setPixelColor(12, 0, 0, 160);
+  strip_a.setPixelColor(13, 0, 0, 160);
+  strip_a.setPixelColor(14, 0, 0, 160); 
+  strip_a.setPixelColor(15, 200, 0, 0);
+  strip_a.show();
   chirp();
 }
 
@@ -329,6 +354,27 @@ void setup(void) {
   // PWM, Servo
   xaxis.attach(5);
   xaxis.write(xpos);
+
+  // Neopixels
+  strip_a.begin();
+  strip_a.setBrightness(96);
+  strip_a.setPixelColor(0, 255, 0, 0);
+  strip_a.setPixelColor(1, 255, 0, 0);
+  strip_a.setPixelColor(2, 255, 0, 0);
+  strip_a.setPixelColor(3, 255, 0, 0);
+  strip_a.setPixelColor(4, 255, 0, 0);
+  strip_a.setPixelColor(5, 255, 0, 0);
+  strip_a.setPixelColor(6, 255, 0, 0);
+  strip_a.setPixelColor(7, 255, 0, 0);
+  strip_a.setPixelColor(8, 255, 0, 0);
+  strip_a.setPixelColor(9, 255, 0, 0);
+  strip_a.setPixelColor(10, 255, 0, 0);
+  strip_a.setPixelColor(11, 255, 0, 0);
+  strip_a.setPixelColor(12, 255, 0, 0);
+  strip_a.setPixelColor(13, 255, 0, 0);
+  strip_a.setPixelColor(14, 255, 0, 0);
+  strip_a.setPixelColor(15, 255, 0, 0);
+  strip_a.show();
 
   // Bluetooth
   Serial.begin(115200);
